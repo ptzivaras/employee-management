@@ -1,2 +1,2 @@
 # employee-management
-A simple CRUD project in Spring Boot and React
+A simple CRUD project in Spring Boot and React. An admin user can manage employees and their tasks. You can create delete update read an employee and his information and also you can create and delete tasks for each employee. Java and Spring-boot are used for backend and React and some libraries(Axios, Bootstrap) for frontend. For this FullStack Tutorial Project a simple DB has been used with 3 tables
