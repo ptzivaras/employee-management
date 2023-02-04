@@ -1,2 +1,3 @@
-# employee-management
-A simple CRUD project in Spring Boot and React. An admin user can manage employees and their tasks. You can create delete update read an employee and his information and also you can create and delete tasks for each employee. Java and Spring-boot are used for backend and React and some libraries(Axios, Bootstrap) for frontend. For this FullStack Tutorial Project a simple DB has been used with 3 tables
+# FullStack employee-management App for an Admin.
+This is a FullStack Tutorial project and the technologies used are PostgreSQL, Spring Boot and React(Axios,BootStrap). This project is an employee management app for an admin User who can manage employees(Create-Read-Update-Delete) and their tasks(Create-Delete). A simple Database is used with 3 Tables
+
