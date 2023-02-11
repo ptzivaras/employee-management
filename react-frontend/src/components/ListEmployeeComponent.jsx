@@ -21,6 +21,8 @@ class ListEmployeeComponent extends Component {
     deleteEmployee(id){
         EmployeeService.deleteEmployee(id).then( res => {
             this.setState({employees: this.state.employees.filter(employee => employee.id !== id)});
+        }).catch(function( e) {
+            alert("Warning: You can not delete an empoyee that has active tasks."|);
         });
     }
     viewEmployee(id){
