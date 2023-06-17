@@ -1,4 +1,4 @@
-import React from 'react';// autos isos axreiasto
+import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
