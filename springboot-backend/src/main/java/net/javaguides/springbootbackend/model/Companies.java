@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "companies")
+@Table(name = "departments") // renamed table
 public class Companies implements Serializable {
 
     @Id
@@ -15,7 +15,7 @@ public class Companies implements Serializable {
 
     @NotBlank
     @Size(min = 2, max = 100)
-    @Column(name = "company_name")
+    @Column(name = "name") // renamed column
     private String companyName;
 
     public Companies() {}

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "Tasks")
+@Table(name = "tasks") // normalized table name
 public class Tasks {
 
     @Id
@@ -34,7 +34,6 @@ public class Tasks {
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
 
-    // Expose clean accessors but keep JSON field name "emp_id" for compatibility
     @JsonProperty("emp_id")
     public Integer getEmpId() { return emp_id; }
 
