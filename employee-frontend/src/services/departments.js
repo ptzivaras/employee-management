@@ -1,7 +1,7 @@
-import api from './api'
+import client from "./client";
 
 // GET /departments
 export async function listDepartments() {
-  const { data } = await api.get('/departments')
-  return Array.isArray(data) ? data : (data?.content ?? [])
+  const res = await client.get("/departments");
+  return res.data; // [{id, name}, ...]
 }
