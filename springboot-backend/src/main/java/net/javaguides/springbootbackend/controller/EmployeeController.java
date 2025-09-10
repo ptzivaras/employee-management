@@ -25,6 +25,7 @@ public class EmployeeController {
     @Autowired
     private TasksRepository tasksRepository;
 
+    // Task create/delete remain here for now (use clean /tasks)
     @PostMapping("/tasks")
     public Tasks createTask(@Valid @RequestBody Tasks tasks) {
         return tasksRepository.save(tasks);
@@ -38,8 +39,10 @@ public class EmployeeController {
         return ResponseEntity.ok().build();
     }
 
-    // legacy join projection
-    @GetMapping("/employees2")
+    // ===== Employees (legacy + clean paths) =====
+
+    // List employees with company info (legacy projection) — keep /employees2 and add /employees
+    @GetMapping({"/employees2", "/employees"})
     public List<Person> getAllEmployeesDetails(){
         List<Person> models = new ArrayList<>();
         List<Object[]> mylist = employeeRepository.findSomeEmployees();
@@ -49,28 +52,28 @@ public class EmployeeController {
         return models;
     }
 
-    // create employee (validated)
-    @PostMapping("/employees2")
+    // Create employee (map both /employees2 and /employees)
+    @PostMapping({"/employees2", "/employees"})
     public Employee createEmployee(@Valid @RequestBody Employee employee){
         return employeeRepository.save(employee);
     }
 
-    // get employee by id
-    @GetMapping("/employees2/{id}")
+    // Get by id (both paths)
+    @GetMapping({"/employees2/{id}", "/employees/{id}"})
     public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
         return ResponseEntity.ok(employee);
     }
 
-    // get tasks of specific employee_id
+    // Get tasks for employee (already clean path)
     @GetMapping("/employees/{id}/tasks")
     public ResponseEntity<List<Tasks>> getTasksByEmployeeId(@PathVariable Long id) {
         return ResponseEntity.ok(tasksRepository.getRelatedTasks(id));
     }
 
-    // update employee (validated)
-    @PutMapping("/employees2/{id}")
+    // Update (both paths)
+    @PutMapping({"/employees2/{id}", "/employees/{id}"})
     public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employeeDetails){
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
@@ -84,12 +87,11 @@ public class EmployeeController {
         return ResponseEntity.ok(updatedEmployee);
     }
 
-    // delete employee
-    @DeleteMapping("/employees2/{id}")
+    // Delete (both paths)
+    @DeleteMapping({"/employees2/{id}", "/employees/{id}"})
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id){
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-
         employeeRepository.delete(employee);
         return ResponseEntity.ok().build();
     }

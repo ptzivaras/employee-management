@@ -15,7 +15,8 @@ public class TasksController {
     @Autowired
     private TasksRepository tasksRepository;
 
-    @GetMapping("/Tasks")
+    // Add clean route /tasks while keeping legacy /Tasks
+    @GetMapping({"/Tasks", "/tasks"})
     public List<Tasks> getAllTasks(){
         return tasksRepository.findAll();
     }
