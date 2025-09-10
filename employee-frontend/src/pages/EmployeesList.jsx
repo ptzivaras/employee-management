@@ -1,85 +1,76 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { listEmployees, deleteEmployee } from "../api/employees";
-import { pushToast } from "../components/ToastHost";
+import { useEffect, useState } from 'react';
+import { listEmployees, deleteEmployee } from '../api/employees';
+import { Link } from 'react-router-dom';
 
 export default function EmployeesList() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
+  async function load() {
+    try {
       setLoading(true);
-      try {
-        const data = await listEmployees();
-        if (!alive) return;
-        setRows(Array.isArray(data) ? data : []);
-      } catch (err) {
-        // interceptor already showed toast
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+      const data = await listEmployees();
+      setRows(data);
+      setErr('');
+    } catch (e) {
+      setErr('Failed to fetch employees.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
 
   async function onDelete(id) {
-    if (!window.confirm("Delete this employee?")) return;
+    if (!confirm('Delete this employee?')) return;
     try {
       await deleteEmployee(id);
-      setRows((prev) => prev.filter((e) => e.id !== id));
-      pushToast({ type: "success", text: "Employee deleted" });
+      await load();
     } catch {
-      // interceptor showed toast
+      alert('Delete failed (maybe the employee has tasks).');
     }
   }
 
   return (
-    <div className="d-grid gap-3">
-      <div className="d-flex justify-content-between align-items-center">
-        <h2 className="m-0">Employees</h2>
-        <Link to="/employees/new" className="btn btn-primary">+ Add Employee</Link>
+    <div className="container">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3>Employees</h3>
+        <Link to="/employees/new" className="btn btn-primary">Add Employee</Link>
       </div>
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : rows.length === 0 ? (
-        <div className="alert alert-info">No employees yet.</div>
-      ) : (
+      {loading && <div>Loading…</div>}
+      {err && <div className="alert alert-danger">{err}</div>}
+
+      {!loading && !err && (
         <div className="table-responsive">
-          <table className="table table-striped table-hover align-middle">
+          <table className="table table-striped align-middle">
             <thead>
               <tr>
-                <th style={{ width: 120 }}>ID</th>
                 <th>First</th>
                 <th>Last</th>
                 <th>Email</th>
-                <th style={{ width: 260 }}>Actions</th>
+                <th>Department</th>
+                <th style={{width: 180}}></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((e) => (
-                <tr key={e.id}>
-                  <td>{e.id}</td>
-                  <td>{e.firstName}</td>
-                  <td>{e.lastName}</td>
-                  <td>{e.emailId}</td>
-                  <td className="d-flex gap-2">
-                    <Link className="btn btn-sm btn-outline-secondary" to={`/employees/${e.id}`}>
-                      View
-                    </Link>
-                    <Link className="btn btn-sm btn-outline-primary" to={`/employees/${e.id}/edit`}>
-                      Edit
-                    </Link>
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => onDelete(e.id)}>
-                      Delete
-                    </button>
+              {rows.map(r => (
+                <tr key={r.id}>
+                  <td>{r.firstName}</td>
+                  <td>{r.lastName}</td>
+                  <td>{r.email}</td>
+                  <td>{r.departmentName ?? '-'}</td>
+                  <td>
+                    <Link to={`/employees/${r.id}`} className="btn btn-sm btn-outline-secondary me-2">View</Link>
+                    <Link to={`/employees/${r.id}/edit`} className="btn btn-sm btn-outline-primary me-2">Edit</Link>
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => onDelete(r.id)}>Delete</button>
                   </td>
                 </tr>
               ))}
+              {!rows.length && (
+                <tr><td colSpan="5" className="text-center text-muted">No employees yet</td></tr>
+              )}
             </tbody>
           </table>
         </div>

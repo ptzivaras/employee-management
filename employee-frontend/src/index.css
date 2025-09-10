@@ -5,3 +5,4 @@ html, body, #root {
 .table td, .table th {
   vertical-align: middle;
 }
+body { background: #f7f7f7; }
