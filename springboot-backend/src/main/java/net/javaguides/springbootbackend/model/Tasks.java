@@ -1,6 +1,10 @@
 package net.javaguides.springbootbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "Tasks")
@@ -10,9 +14,12 @@ public class Tasks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotNull
     @Column(name = "emp_id")
-    private int emp_id;
+    private Integer emp_id;
 
+    @NotBlank
+    @Size(max = 120)
     @Column(name = "task_name")
     private String taskName;
 
@@ -27,10 +34,13 @@ public class Tasks {
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
 
-    // NOTE: weird accessors kept in Commit 1; fixed in Commit 2
-    public long getemp_id() { return emp_id; }
-    public void setemp_id(String emp_id) { this.emp_id = Integer.parseInt(emp_id); }
+    // Expose clean accessors but keep JSON field name "emp_id" for compatibility
+    @JsonProperty("emp_id")
+    public Integer getEmpId() { return emp_id; }
 
-    public String gettaskName() { return taskName; }
-    public void settaskName(String taskName) { this.taskName = taskName; }
+    @JsonProperty("emp_id")
+    public void setEmpId(Integer empId) { this.emp_id = empId; }
+
+    public String getTaskName() { return taskName; }
+    public void setTaskName(String taskName) { this.taskName = taskName; }
 }

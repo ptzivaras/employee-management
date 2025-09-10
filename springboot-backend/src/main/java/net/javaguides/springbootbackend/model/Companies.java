@@ -2,6 +2,8 @@ package net.javaguides.springbootbackend.model;
 
 import java.io.Serializable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "companies")
@@ -11,6 +13,8 @@ public class Companies implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotBlank
+    @Size(min = 2, max = 100)
     @Column(name = "company_name")
     private String companyName;
 
