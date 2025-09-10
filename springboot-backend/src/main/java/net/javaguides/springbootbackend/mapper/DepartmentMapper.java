@@ -1,11 +1,11 @@
 package net.javaguides.springbootbackend.mapper;
 
 import net.javaguides.springbootbackend.dto.DepartmentDto;
-import net.javaguides.springbootbackend.model.Companies;
+import net.javaguides.springbootbackend.model.Department;
 
 public class DepartmentMapper {
-    public static DepartmentDto toDto(Companies c) {
-        if (c == null) return null;
-        return new DepartmentDto(c.getId(), c.getCompanyName());
+    public static DepartmentDto toDto(Department d) {
+        if (d == null) return null;
+        return new DepartmentDto(d.getId(), d.getName());
     }
 }

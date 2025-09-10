@@ -2,8 +2,8 @@ package net.javaguides.springbootbackend.controller;
 
 import net.javaguides.springbootbackend.dto.DepartmentDto;
 import net.javaguides.springbootbackend.mapper.DepartmentMapper;
-import net.javaguides.springbootbackend.model.Companies;
-import net.javaguides.springbootbackend.repository.CompaniesRepository;
+import net.javaguides.springbootbackend.model.Department;
+import net.javaguides.springbootbackend.repository.DepartmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,15 +13,15 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/")
-public class CompaniesController {
+public class DepartmentsController {
 
     @Autowired
-    private CompaniesRepository companiesRepository;
+    private DepartmentRepository departmentRepository;
 
-    // New clean route /departments kept alongside legacy /companies
-    @GetMapping({"/companies", "/departments"})
-    public List<DepartmentDto> getAllCompaniesOrDepartments() {
-        List<Companies> rows = companiesRepository.findAll();
+    // New & legacy routes both work
+    @GetMapping({"/departments", "/companies"})
+    public List<DepartmentDto> getAllDepartments() {
+        List<Department> rows = departmentRepository.findAll();
         return rows.stream().map(DepartmentMapper::toDto).collect(Collectors.toList());
     }
 }
