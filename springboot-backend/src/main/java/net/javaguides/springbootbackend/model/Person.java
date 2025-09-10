@@ -1,5 +1,8 @@
 package net.javaguides.springbootbackend.model;
 
+import jakarta.persistence.*;
+
+
 public class Person {
 
     private Long id;
