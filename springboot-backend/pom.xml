@@ -19,6 +19,8 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<!-- Align Flyway engine and PostgreSQL plugin (supports PostgreSQL 17.x) -->
+		<flyway.version>11.12.0</flyway.version>
 	</properties>
 
 	<dependencies>
@@ -32,7 +34,7 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<!-- Bean Validation (used in Commit 2) -->
+		<!-- Validation -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
@@ -45,7 +47,20 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Devtools (optional, dev only) -->
+		<!-- Flyway (engine) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+			<version>${flyway.version}</version>
+		</dependency>
+		<!-- Flyway PostgreSQL database plugin (required for PG 17.x) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+			<version>${flyway.version}</version>
+		</dependency>
+
+		<!-- Devtools (optional for dev) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
