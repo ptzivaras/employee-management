@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { listEmployees, deleteEmployee } from "../api/employees";
+import { pushToast } from "../components/ToastHost";
 
 export default function EmployeesList() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const nav = useNavigate();
 
   useEffect(() => {
     let alive = true;
@@ -16,8 +16,7 @@ export default function EmployeesList() {
         if (!alive) return;
         setRows(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error(err);
-        alert("Failed to load employees. See console for details.");
+        // interceptor already showed toast
       } finally {
         if (alive) setLoading(false);
       }
@@ -31,22 +30,18 @@ export default function EmployeesList() {
     if (!window.confirm("Delete this employee?")) return;
     try {
       await deleteEmployee(id);
-      setRows((prev) => prev.filter((r) => r.id !== id));
-    } catch (err) {
-      console.error(err);
-      alert(
-        "Delete failed. If the employee has tasks, the backend may reject deletion."
-      );
+      setRows((prev) => prev.filter((e) => e.id !== id));
+      pushToast({ type: "success", text: "Employee deleted" });
+    } catch {
+      // interceptor showed toast
     }
   }
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="d-grid gap-3">
+      <div className="d-flex justify-content-between align-items-center">
         <h2 className="m-0">Employees</h2>
-        <button className="btn btn-primary" onClick={() => nav("/employees/new")}>
-          + Add Employee
-        </button>
+        <Link to="/employees/new" className="btn btn-primary">+ Add Employee</Link>
       </div>
 
       {loading ? (
@@ -55,50 +50,36 @@ export default function EmployeesList() {
         <div className="alert alert-info">No employees yet.</div>
       ) : (
         <div className="table-responsive">
-          <table className="table table-striped table-hover">
+          <table className="table table-striped table-hover align-middle">
             <thead>
               <tr>
+                <th style={{ width: 120 }}>ID</th>
                 <th>First</th>
                 <th>Last</th>
                 <th>Email</th>
-                <th>Department/Company</th>
-                <th style={{ width: 180 }}>Actions</th>
+                <th style={{ width: 260 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((e) => {
-                const email = e.email ?? e.emailId ?? "";
-                const dept =
-                  e.departmentName ??
-                  e.companyName ??
-                  e.department?.name ??
-                  e.company ??
-                  "";
-                return (
-                  <tr key={e.id}>
-                    <td>{e.firstName}</td>
-                    <td>{e.lastName}</td>
-                    <td>{email}</td>
-                    <td>{dept}</td>
-                    <td>
-                      <div className="btn-group btn-group-sm">
-                        <button
-                          className="btn btn-outline-secondary"
-                          onClick={() => nav(`/employees/${e.id}/edit`)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn btn-outline-danger"
-                          onClick={() => onDelete(e.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {rows.map((e) => (
+                <tr key={e.id}>
+                  <td>{e.id}</td>
+                  <td>{e.firstName}</td>
+                  <td>{e.lastName}</td>
+                  <td>{e.emailId}</td>
+                  <td className="d-flex gap-2">
+                    <Link className="btn btn-sm btn-outline-secondary" to={`/employees/${e.id}`}>
+                      View
+                    </Link>
+                    <Link className="btn btn-sm btn-outline-primary" to={`/employees/${e.id}/edit`}>
+                      Edit
+                    </Link>
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => onDelete(e.id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

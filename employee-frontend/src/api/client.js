@@ -1,15 +1,43 @@
 import axios from "axios";
-
-// Base URL from Vite .env, with a sensible default
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "") ||
-  "http://localhost:8080/api/v1";
+import { pushToast } from "../components/ToastHost";
 
 const client = axios.create({
-  baseURL,
-  // You can add headers here if needed
-  // headers: { 'Content-Type': 'application/json' }
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1",
+  timeout: 15000,
+  withCredentials: false,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
 
-// NOTE: Interceptors (auth, global errors) will be introduced in a later commit.
+// Request interceptor (π.χ. place for auth header later)
+client.interceptors.request.use(
+  (config) => config,
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor: ομοιόμορφα errors
+client.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    const status = error?.response?.status;
+    const detail =
+      error?.response?.data?.detail ||
+      error?.response?.data?.message ||
+      error?.message ||
+      "Network error";
+
+    if (status >= 500) {
+      pushToast({ type: "danger", text: `Server error: ${detail}` });
+    } else if (status >= 400) {
+      pushToast({ type: "warning", text: detail });
+    } else {
+      pushToast({ type: "danger", text: detail });
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default client;

@@ -1,83 +1,71 @@
 import client from "./client";
 
-// Utility: try a modern endpoint, fall back to legacy on 404.
-async function tryWithFallback(tryCall, fallbackCall) {
+// GET /employees  (fallback to /employees2 from your legacy API)
+export async function listEmployees() {
   try {
-    return await tryCall();
+    const res = await client.get("/employees");
+    return res.data;
   } catch (err) {
     if (err?.response?.status === 404) {
-      return await fallbackCall();
+      const res = await client.get("/employees2");
+      return res.data;
     }
     throw err;
   }
 }
 
-// List employees
-export async function listEmployees() {
-  return tryWithFallback(
-    async () => (await client.get("/employees")).data,
-    async () => (await client.get("/employees2")).data
-  );
-}
-
-// Get one employee by id
+// GET /employees/{id} (fallback /employees2/{id})
 export async function getEmployee(id) {
-  return tryWithFallback(
-    async () => (await client.get(`/employees/${id}`)).data,
-    async () => (await client.get(`/employees2/${id}`)).data
-  );
+  try {
+    const res = await client.get(`/employees/${id}`);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await client.get(`/employees2/${id}`);
+      return res.data;
+    }
+    throw err;
+  }
 }
 
-// Create employee
-// Modern API expects: { firstName, lastName, email, departmentId }
-// Legacy expects:     { firstName, lastName, emailId, compId }
-export async function createEmployee(payload) {
-  const modernBody = {
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    email: payload.email,
-    departmentId: payload.departmentId,
-  };
-
-  const legacyBody = {
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    emailId: payload.email,
-    compId: Number(payload.departmentId),
-  };
-
-  return tryWithFallback(
-    async () => (await client.post("/employees", modernBody)).data,
-    async () => (await client.post("/employees2", legacyBody)).data
-  );
+// POST /employees  (fallback /employees2)
+export async function createEmployee(body) {
+  try {
+    const res = await client.post("/employees", body);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await client.post("/employees2", body);
+      return res.data;
+    }
+    throw err;
+  }
 }
 
-// Update employee
-export async function updateEmployee(id, payload) {
-  const modernBody = {
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    email: payload.email,
-    departmentId: payload.departmentId,
-  };
-
-  const legacyBody = {
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    emailId: payload.email,
-    compId: Number(payload.departmentId),
-  };
-
-  return tryWithFallback(
-    async () => (await client.put(`/employees/${id}`, modernBody)).data,
-    async () => (await client.put(`/employees2/${id}`, legacyBody)).data
-  );
+// PUT /employees/{id} (fallback /employees2/{id})
+export async function updateEmployee(id, body) {
+  try {
+    const res = await client.put(`/employees/${id}`, body);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await client.put(`/employees2/${id}`, body);
+      return res.data;
+    }
+    throw err;
+  }
 }
 
-// Delete employee
+// DELETE /employees/{id} (fallback /employees2/{id})
 export async function deleteEmployee(id) {
-  return tryWithFallback(
-    async () => (await client.delete(`/employees/${id}`)).data,
-    async () => (await client.delete(`/employees2/${id}`)).data
-  );
+  try {
+    const res = await client.delete(`/employees/${id}`);
+    return res.data;
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await client.delete(`/employees2/${id}`);
+      return res.data;
+    }
+    throw err;
+  }
 }
