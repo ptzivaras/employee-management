@@ -1,18 +1,11 @@
 package net.javaguides.springbootbackend.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class TaskCreateRequest {
-    @Min(1)
-    private Integer empId;
-
+public class TaskUpdateRequest {
     @NotBlank @Size(max = 120)
     private String taskName;
-
-    public Integer getEmpId() { return empId; }
-    public void setEmpId(Integer empId) { this.empId = empId; }
 
     public String getTaskName() { return taskName; }
     public void setTaskName(String taskName) { this.taskName = taskName; }

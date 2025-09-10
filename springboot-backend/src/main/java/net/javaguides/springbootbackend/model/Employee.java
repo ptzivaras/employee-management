@@ -4,7 +4,6 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -16,28 +15,27 @@ public class Employee implements Serializable {
     private long id;
 
     @NotBlank
-    @Size(max = 50)
-    @Column(name = "first_name")
+    @Size(min = 2, max = 60)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @NotBlank
-    @Size(max = 50)
-    @Column(name = "last_name")
+    @Size(min = 2, max = 60)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @NotBlank
     @Email
-    @Size(max = 255)
-    @Column(name = "email_id")
+    @Size(max = 190)
+    @Column(name = "email_id", nullable = false)
     private String emailId;
 
-    @NotNull
-    @Column(name = "comp_id")
+    @Column(name = "comp_id", nullable = false)
     private Integer compId;
 
     public Employee() {}
 
-    public Employee(String firstName, String lastName, String emailId, Integer compId) {
+    public Employee(String firstName, String lastName, String emailId, int compId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.emailId = emailId;

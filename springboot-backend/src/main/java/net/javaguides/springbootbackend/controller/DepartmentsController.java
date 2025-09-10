@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -21,7 +20,9 @@ public class DepartmentsController {
     // New & legacy routes both work
     @GetMapping({"/departments", "/companies"})
     public List<DepartmentDto> getAllDepartments() {
-        List<Department> rows = departmentRepository.findAll();
-        return rows.stream().map(DepartmentMapper::toDto).collect(Collectors.toList());
+        return departmentRepository.findAll()
+                .stream()
+                .map(DepartmentMapper::toDto)
+                .toList();
     }
 }

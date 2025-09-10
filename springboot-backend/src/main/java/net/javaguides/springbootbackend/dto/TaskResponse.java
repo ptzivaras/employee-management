@@ -1,15 +1,20 @@
 package net.javaguides.springbootbackend.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-public class TaskCreateRequest {
-    @Min(1)
+public class TaskResponse {
+    private Long id;
     private Integer empId;
-
-    @NotBlank @Size(max = 120)
     private String taskName;
+
+    public TaskResponse() {}
+
+    public TaskResponse(Long id, Integer empId, String taskName) {
+        this.id = id;
+        this.empId = empId;
+        this.taskName = taskName;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Integer getEmpId() { return empId; }
     public void setEmpId(Integer empId) { this.empId = empId; }
