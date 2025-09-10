@@ -2,10 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 
-// Pages
 import HomePage from './pages/HomePage.jsx'
 import EmployeesPage from './pages/EmployeesPage.jsx'
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage.jsx'
+import EmployeeFormPage from './pages/EmployeeFormPage.jsx'
 
 export default function App() {
   return (
@@ -16,7 +16,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/employees/new" element={<EmployeeFormPage mode="create" />} />
           <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+          <Route path="/employees/:id/edit" element={<EmployeeFormPage mode="edit" />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -1,9 +1,15 @@
+import { Link, NavLink } from 'react-router-dom'
+
 export default function Header() {
   return (
     <header>
-      <nav className="navbar navbar-dark bg-dark">
+      <nav className="navbar navbar-expand navbar-dark bg-dark">
         <div className="container">
-          <span className="navbar-brand mb-0 h1">Employee Management App</span>
+          <Link to="/" className="navbar-brand">Employee Management</Link>
+          <div className="navbar-nav">
+            <NavLink to="/" end className="nav-link">Home</NavLink>
+            <NavLink to="/employees" className="nav-link">Employees</NavLink>
+          </div>
         </div>
       </nav>
     </header>
