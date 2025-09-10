@@ -1,11 +1,14 @@
 package net.javaguides.springbootbackend.controller;
 
+import net.javaguides.springbootbackend.dto.TaskDto;
+import net.javaguides.springbootbackend.mapper.TaskMapper;
 import net.javaguides.springbootbackend.model.Tasks;
 import net.javaguides.springbootbackend.repository.TasksRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -17,7 +20,8 @@ public class TasksController {
 
     // Add clean route /tasks while keeping legacy /Tasks
     @GetMapping({"/Tasks", "/tasks"})
-    public List<Tasks> getAllTasks(){
-        return tasksRepository.findAll();
+    public List<TaskDto> getAllTasks(){
+        List<Tasks> rows = tasksRepository.findAll();
+        return rows.stream().map(TaskMapper::toDto).collect(Collectors.toList());
     }
 }

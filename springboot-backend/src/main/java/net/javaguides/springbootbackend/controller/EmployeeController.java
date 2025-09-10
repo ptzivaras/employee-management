@@ -1,9 +1,11 @@
 package net.javaguides.springbootbackend.controller;
 
 import jakarta.validation.Valid;
+import net.javaguides.springbootbackend.dto.*;
 import net.javaguides.springbootbackend.exception.ResourceNotFoundException;
+import net.javaguides.springbootbackend.mapper.EmployeeMapper;
+import net.javaguides.springbootbackend.mapper.TaskMapper;
 import net.javaguides.springbootbackend.model.Employee;
-import net.javaguides.springbootbackend.model.Person;
 import net.javaguides.springbootbackend.model.Tasks;
 import net.javaguides.springbootbackend.repository.EmployeeRepository;
 import net.javaguides.springbootbackend.repository.TasksRepository;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -25,10 +28,12 @@ public class EmployeeController {
     @Autowired
     private TasksRepository tasksRepository;
 
-    // Task create/delete remain here for now (use clean /tasks)
+    // ===== Tasks (create/delete use DTOs) =====
+
     @PostMapping("/tasks")
-    public Tasks createTask(@Valid @RequestBody Tasks tasks) {
-        return tasksRepository.save(tasks);
+    public TaskDto createTask(@Valid @RequestBody TaskCreateRequest body) {
+        Tasks saved = tasksRepository.save(TaskMapper.fromCreate(body));
+        return TaskMapper.toDto(saved);
     }
 
     @DeleteMapping("/tasks/{id}")
@@ -41,50 +46,54 @@ public class EmployeeController {
 
     // ===== Employees (legacy + clean paths) =====
 
-    // List employees with company info (legacy projection) — keep /employees2 and add /employees
+    // List employees with company info (legacy projection) — now returns DTO
     @GetMapping({"/employees2", "/employees"})
-    public List<Person> getAllEmployeesDetails(){
-        List<Person> models = new ArrayList<>();
+    public List<EmployeeSummaryDto> getAllEmployeesDetails(){
+        List<EmployeeSummaryDto> models = new ArrayList<>();
         List<Object[]> mylist = employeeRepository.findSomeEmployees();
         for (Object[] item : mylist) {
-            models.add(new Person((Long) item[0], (String) item[1], (String) item[2], (String) item[3], (String) item[4]));
+            // SELECT e.id, e.emailId, e.firstName, e.lastName, c.companyName
+            Long id = (Long) item[0];
+            String email = (String) item[1];
+            String first = (String) item[2];
+            String last = (String) item[3];
+            String company = (String) item[4];
+            models.add(new EmployeeSummaryDto(id, first, last, email, company));
         }
         return models;
     }
 
-    // Create employee (map both /employees2 and /employees)
+    // Create employee — accepts DTO, returns DTO (both paths)
     @PostMapping({"/employees2", "/employees"})
-    public Employee createEmployee(@Valid @RequestBody Employee employee){
-        return employeeRepository.save(employee);
+    public EmployeeDto createEmployee(@Valid @RequestBody EmployeeCreateRequest body){
+        Employee saved = employeeRepository.save(EmployeeMapper.fromCreate(body));
+        return EmployeeMapper.toDto(saved);
     }
 
-    // Get by id (both paths)
+    // Get by id — returns DTO (both paths)
     @GetMapping({"/employees2/{id}", "/employees/{id}"})
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-        return ResponseEntity.ok(employee);
+        return ResponseEntity.ok(EmployeeMapper.toDto(employee));
     }
 
-    // Get tasks for employee (already clean path)
+    // Get tasks for employee — returns TaskDto list (already clean path)
     @GetMapping("/employees/{id}/tasks")
-    public ResponseEntity<List<Tasks>> getTasksByEmployeeId(@PathVariable Long id) {
-        return ResponseEntity.ok(tasksRepository.getRelatedTasks(id));
+    public ResponseEntity<List<TaskDto>> getTasksByEmployeeId(@PathVariable Long id) {
+        List<Tasks> tasks = tasksRepository.getRelatedTasks(id);
+        List<TaskDto> dtos = tasks.stream().map(TaskMapper::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
-    // Update (both paths)
+    // Update — accepts DTO, returns DTO (both paths)
     @PutMapping({"/employees2/{id}", "/employees/{id}"})
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employeeDetails){
+    public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeUpdateRequest body){
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id :" + id));
-
-        employee.setFirstName(employeeDetails.getFirstName());
-        employee.setLastName(employeeDetails.getLastName());
-        employee.setEmailId(employeeDetails.getEmailId());
-        employee.setCompId(employeeDetails.getCompId());
-
-        Employee updatedEmployee = employeeRepository.save(employee);
-        return ResponseEntity.ok(updatedEmployee);
+        EmployeeMapper.applyUpdate(employee, body);
+        Employee updated = employeeRepository.save(employee);
+        return ResponseEntity.ok(EmployeeMapper.toDto(updated));
     }
 
     // Delete (both paths)
