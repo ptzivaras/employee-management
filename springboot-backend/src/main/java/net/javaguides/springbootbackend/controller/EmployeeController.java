@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-//@CrossOrigin(origins = "http://localhost:5173")
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1/")
 @Validated
@@ -26,7 +24,6 @@ public class EmployeeController {
     @Autowired private DepartmentRepository departmentRepository;
 
     // ---- List & search with pagination ----
-    // GET /employees?page=0&size=10&sort=lastName,asc&q=john
     @GetMapping({"/employees", "/employees2"}) // keep legacy path alive
     public Page<EmployeeResponse> listEmployees(
             @RequestParam(defaultValue = "0") int page,
@@ -51,8 +48,12 @@ public class EmployeeController {
     public ResponseEntity<EmployeeResponse> getEmployeeById(@PathVariable Long id) {
         Employee e = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
-        String deptName = departmentRepository.findById(e.getCompId().longValue())
-                .map(Department::getName).orElse(null);
+
+        // e.getCompId() is int/Integer -> convert to Long for repository
+        Long deptId = (e.getCompId() == null) ? null : Long.valueOf(e.getCompId());
+        String deptName = (deptId == null) ? null :
+                departmentRepository.findById(deptId).map(Department::getName).orElse(null);
+
         return ResponseEntity.ok(EmployeeMapper.toResponse(e, deptName));
     }
 
@@ -62,7 +63,9 @@ public class EmployeeController {
         if (employeeRepository.existsByEmailIdIgnoreCase(req.getEmailId())) {
             throw new IllegalArgumentException("Email already exists: " + req.getEmailId());
         }
-        Department d = departmentRepository.findById((long) req.getCompId())
+
+        Long deptId = Long.valueOf(req.getCompId());
+        Department d = departmentRepository.findById(deptId)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not exist with id: " + req.getCompId()));
 
         Employee e = new Employee(req.getFirstName(), req.getLastName(), req.getEmailId(), req.getCompId());
@@ -76,7 +79,9 @@ public class EmployeeController {
                                                            @RequestBody @Validated EmployeeUpdateRequest req) {
         Employee e = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not exist with id: " + id));
-        Department d = departmentRepository.findById((long) req.getCompId())
+
+        Long deptId = Long.valueOf(req.getCompId());
+        Department d = departmentRepository.findById(deptId)
                 .orElseThrow(() -> new ResourceNotFoundException("Department not exist with id: " + req.getCompId()));
 
         if (!e.getEmailId().equalsIgnoreCase(req.getEmailId())
@@ -116,7 +121,7 @@ public class EmployeeController {
         e.setFirstName(s.getFirstName());
         e.setLastName(s.getLastName());
         e.setEmailId(s.getEmailId());
-        e.setCompId(s.getCompId());
+        e.setCompId(s.getCompId()); // summary interface should expose Integer/Int compId
         return e;
     }
 }

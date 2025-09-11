@@ -3,7 +3,6 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { getEmployee } from "../api/employees";
 import { listTasksByEmployee, createTask, deleteTask } from "../api/tasks";
 import { pushToast } from "../components/ToastHost";
-import { listTasksByEmployee, createTask, deleteTask } from "../api/tasks";
 
 export default function EmployeeDetails() {
   const { id } = useParams();
