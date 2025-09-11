@@ -1,23 +1,28 @@
 import client from "./client";
 
 // List tasks for an employee
-// Primary: GET /employees/{id}/tasks  (your backend already has this)
 export async function listTasksByEmployee(employeeId) {
-  const res = await client.get(`/employees/${employeeId}/tasks`);
-  return res.data ?? [];
+  const res = await client.get("/tasks", { params: { empId: Number(employeeId) } });
+  const data = res.data;
+
+  // If controller returns Page<TaskResponse>
+  if (data && Array.isArray(data.content)) return data.content;
+
+  // If it ever returns a plain array
+  if (Array.isArray(data)) return data;
+
+  // Fallback
+  return [];
 }
 
 // Create a task for an employee
-// Your backend: POST /tasks  { emp_id, taskName }
 export async function createTask(employeeId, taskName) {
-  const payload = { emp_id: Number(employeeId), taskName: String(taskName) };
+  const payload = { empId: Number(employeeId), taskName: String(taskName) }; // <-- empId, not emp_id
   const res = await client.post("/tasks", payload);
   return res.data;
 }
 
 // Delete a task
-// DELETE /tasks/{id}
 export async function deleteTask(taskId) {
-  const res = await client.delete(`/tasks/${taskId}`);
-  return res.data;
+  await client.delete(`/tasks/${taskId}`);
 }

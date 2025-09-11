@@ -4,7 +4,7 @@ import { createEmployee, getEmployee, updateEmployee } from '../api/employees';
 import { listDepartments } from '../api/departments';
 
 export default function EmployeeForm() {
-  const { id } = useParams(); // undefined for create
+  const { id } = useParams();           // undefined for create, defined for edit
   const isEdit = !!id;
   const nav = useNavigate();
 
@@ -23,14 +23,20 @@ export default function EmployeeForm() {
     async function init() {
       try {
         const deps = await listDepartments();
-        setDepartments(deps);
+        setDepartments(Array.isArray(deps) ? deps : []);
+
         if (isEdit) {
           const e = await getEmployee(id);
           setForm({
-            firstName: e.firstName ?? '',
-            lastName:  e.lastName ?? '',
-            email:     e.email ?? '',
-            departmentId: e.departmentId ?? '',
+            firstName: e.firstName ?? e.first_name ?? '',
+            lastName:  e.lastName  ?? e.last_name  ?? '',
+            email:     e.email     ?? e.emailId    ?? '',
+            // support both new and old payloads
+            departmentId:
+              e.departmentId ??
+              e.department?.id ??
+              e.compId ??
+              '',
           });
         }
       } catch {
@@ -47,51 +53,55 @@ export default function EmployeeForm() {
     setForm(prev => ({ ...prev, [name]: value }));
   }
 
+  async function onSubmit(e) {
+    e.preventDefault();
+    setSaving(true);
+    setErr('');
 
-async function onSubmit(e) {
-  e.preventDefault();
-  setSaving(true);
-  setErr('');
+    try {
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName:  form.lastName.trim(),
+        email:     form.email.trim(),            // API layer maps to legacy if needed
+        departmentId: Number(form.departmentId), // ensure number
+      };
 
-  try {
-    const payload = {
-      firstName: form.firstName.trim(),
-      lastName:  form.lastName.trim(),
-      email:     form.email.trim(),          // <-- "email" (new); we map to legacy in API if needed
-      departmentId: Number(form.departmentId), // <-- ensure number
-    };
+      if (!payload.firstName || !payload.lastName || !payload.email || !payload.departmentId) {
+        throw new Error('All fields are required.');
+      }
 
-    if (!payload.firstName || !payload.lastName || !payload.email || !payload.departmentId) {
-      throw new Error('All fields are required.');
+      if (isEdit) await updateEmployee(id, payload);
+      else        await createEmployee(payload);
+
+      nav('/employees');
+    } catch (ex) {
+      const d = ex?.response?.data;
+      const msg =
+        d?.detail ||
+        d?.message ||
+        (d?.fieldErrors && Object.entries(d.fieldErrors).map(([k,v]) => `${k}: ${v}`).join(', ')) ||
+        ex?.message ||
+        'Save failed.';
+      setErr(msg);
+      console.warn('Save error', d || ex);
+    } finally {
+      setSaving(false);
     }
-
-    if (isEdit) await updateEmployee(id, payload);
-    else        await createEmployee(payload);
-
-    nav('/employees');
-  } catch (ex) {
-    const d = ex?.response?.data;
-    const msg =
-      d?.detail ||
-      d?.message ||
-      (d?.fieldErrors && Object.entries(d.fieldErrors).map(([k,v]) => `${k}: ${v}`).join(', ')) ||
-      ex?.message ||
-      'Save failed.';
-    setErr(msg);
-    console.warn('Save error', d || ex);
-  } finally {
-    setSaving(false);
   }
-}
-
-
-
 
   if (loading) return <div className="container">Loading…</div>;
 
   return (
     <div className="container" style={{maxWidth: 720}}>
-      <h3 className="mb-3">{isEdit ? 'Edit Employee' : 'Add Employee'}</h3>
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <div className="d-flex gap-2">
+          <button type="button" className="btn btn-outline-secondary" onClick={() => nav(-1)}>
+            ← Back
+          </button>
+          <h3 className="m-0">{isEdit ? 'Edit Employee' : 'Add Employee'}</h3>
+        </div>
+      </div>
+
       {err && <div className="alert alert-danger">{err}</div>}
 
       <form onSubmit={onSubmit}>
@@ -120,9 +130,14 @@ async function onSubmit(e) {
           </select>
         </div>
 
-        <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
-        </button>
+        <div className="d-flex gap-2">
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+          <button type="button" className="btn btn-outline-secondary" onClick={() => nav('/employees')} disabled={saving}>
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
