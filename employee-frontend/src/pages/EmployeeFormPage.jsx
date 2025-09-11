@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getEmployeeById, createEmployee, updateEmployee } from '../services/employees.js'
-import { listDepartments } from '../services/departments.js'
+import { getEmployeeById, createEmployee, updateEmployee } from '../api/employees.js'
+import { listDepartments } from '../api/departments.js'
 
 export default function EmployeeFormPage({ mode = 'create' }) {
   const navigate = useNavigate()

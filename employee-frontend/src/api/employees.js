@@ -1,81 +1,84 @@
 import client from "./client";
 
-// Try new endpoints, fall back to legacy /employees2
-async function tryWithFallback(tryCall, fallbackCall) {
+// Try primary; on 404 **or 422** fall back (so we handle both "missing endpoint" and "validation rejects body")
+async function tryPrimaryFallback(primary, fallback) {
   try {
-    return await tryCall();
+    return await primary();
   } catch (err) {
-    if (err?.response?.status === 404) return await fallbackCall();
+    const status = err?.response?.status;
+    if ((status === 404 || status === 422) && typeof fallback === "function") {
+      return await fallback();
+    }
     throw err;
   }
 }
 
-// Normalize a list payload into an array
-function normalizeList(data) {
+// Normalize arrays (some backends return Page<T> with .content)
+function toArray(data) {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.content)) return data.content;
-  console.warn("Employees API returned non-array:", data);
   return [];
 }
 
 export async function listEmployees() {
-  const data = await tryWithFallback(
+  const data = await tryPrimaryFallback(
     async () => (await client.get("/employees")).data,
     async () => (await client.get("/employees2")).data
   );
-  return normalizeList(data);
+  return toArray(data);
 }
 
 export async function getEmployee(id) {
-  return await tryWithFallback(
+  return tryPrimaryFallback(
     async () => (await client.get(`/employees/${id}`)).data,
     async () => (await client.get(`/employees2/${id}`)).data
   );
 }
 
-// Create employee
-// New API: { firstName, lastName, email, departmentId }
-// Legacy : { firstName, lastName, emailId, compId }
 export async function createEmployee(payload) {
-  const modern = {
+  // NEW api
+  const modernBody = {
     firstName: payload.firstName,
-    lastName: payload.lastName,
-    email: payload.email,
+    lastName:  payload.lastName,
+    email:     payload.email,
     departmentId: Number(payload.departmentId),
   };
-  const legacy = {
+  // LEGACY api
+  const legacyBody = {
     firstName: payload.firstName,
-    lastName: payload.lastName,
-    emailId: payload.email,
-    compId: Number(payload.departmentId),
+    lastName:  payload.lastName,
+    emailId:   payload.email,
+    compId:    Number(payload.departmentId),
   };
-  return await tryWithFallback(
-    async () => (await client.post("/employees", modern)).data,
-    async () => (await client.post("/employees2", legacy)).data
+
+  return tryPrimaryFallback(
+    async () => (await client.post("/employees", modernBody)).data,
+    async () => (await client.post("/employees2", legacyBody)).data
   );
 }
 
 export async function updateEmployee(id, payload) {
-  const modern = {
+  const modernBody = {
     firstName: payload.firstName,
-    lastName: payload.lastName,
-    email: payload.email,
+    lastName:  payload.lastName,
+    email:     payload.email,
     departmentId: Number(payload.departmentId),
   };
-  const legacy = {
+  const legacyBody = {
     firstName: payload.firstName,
-    lastName: payload.lastName,
-    emailId: payload.email,
-    compId: Number(payload.departmentId),
+    lastName:  payload.lastName,
+    emailId:   payload.email,
+    compId:    Number(payload.departmentId),
   };
-  return await tryWithFallback(
-    async () => (await client.put(`/employees/${id}`, modern)).data,
-    async () => (await client.put(`/employees2/${id}`, legacy)).data
+
+  return tryPrimaryFallback(
+    async () => (await client.put(`/employees/${id}`, modernBody)).data,
+    async () => (await client.put(`/employees2/${id}`, legacyBody)).data
   );
 }
 
 export async function deleteEmployee(id) {
-  return await tryWithFallback(
+  return tryPrimaryFallback(
     async () => (await client.delete(`/employees/${id}`)).data,
     async () => (await client.delete(`/employees2/${id}`)).data
   );

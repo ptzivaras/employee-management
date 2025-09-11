@@ -47,29 +47,45 @@ export default function EmployeeForm() {
     setForm(prev => ({ ...prev, [name]: value }));
   }
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    setSaving(true);
-    setErr('');
-    try {
-      const payload = {
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-        departmentId: Number(form.departmentId),
-      };
-      if (isEdit) {
-        await updateEmployee(id, payload);
-      } else {
-        await createEmployee(payload);
-      }
-      nav('/employees');
-    } catch (ex) {
-      setErr('Save failed. Check fields (email unique? department selected?)');
-    } finally {
-      setSaving(false);
+
+async function onSubmit(e) {
+  e.preventDefault();
+  setSaving(true);
+  setErr('');
+
+  try {
+    const payload = {
+      firstName: form.firstName.trim(),
+      lastName:  form.lastName.trim(),
+      email:     form.email.trim(),          // <-- "email" (new); we map to legacy in API if needed
+      departmentId: Number(form.departmentId), // <-- ensure number
+    };
+
+    if (!payload.firstName || !payload.lastName || !payload.email || !payload.departmentId) {
+      throw new Error('All fields are required.');
     }
+
+    if (isEdit) await updateEmployee(id, payload);
+    else        await createEmployee(payload);
+
+    nav('/employees');
+  } catch (ex) {
+    const d = ex?.response?.data;
+    const msg =
+      d?.detail ||
+      d?.message ||
+      (d?.fieldErrors && Object.entries(d.fieldErrors).map(([k,v]) => `${k}: ${v}`).join(', ')) ||
+      ex?.message ||
+      'Save failed.';
+    setErr(msg);
+    console.warn('Save error', d || ex);
+  } finally {
+    setSaving(false);
   }
+}
+
+
+
 
   if (loading) return <div className="container">Loading…</div>;
 

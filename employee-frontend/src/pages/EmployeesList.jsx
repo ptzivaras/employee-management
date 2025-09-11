@@ -11,10 +11,12 @@ export default function EmployeesList() {
     try {
       setLoading(true);
       const data = await listEmployees();
-      setRows(data);
+      setRows(Array.isArray(data) ? data : []);   // <-- guard
       setErr('');
     } catch (e) {
+      console.warn('Employees fetch error:', e?.response?.data || e);
       setErr('Failed to fetch employees.');
+      setRows([]);                                // <-- guard
     } finally {
       setLoading(false);
     }
@@ -27,7 +29,7 @@ export default function EmployeesList() {
     try {
       await deleteEmployee(id);
       await load();
-    } catch {
+    } catch (e) {
       alert('Delete failed (maybe the employee has tasks).');
     }
   }
@@ -51,16 +53,16 @@ export default function EmployeesList() {
                 <th>Last</th>
                 <th>Email</th>
                 <th>Department</th>
-                <th style={{width: 180}}></th>
+                <th style={{ width: 180 }}></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map(r => (
+              {(rows ?? []).map(r => (   // <-- guard when rendering
                 <tr key={r.id}>
-                  <td>{r.firstName}</td>
-                  <td>{r.lastName}</td>
-                  <td>{r.email}</td>
-                  <td>{r.departmentName ?? '-'}</td>
+                  <td>{r.firstName ?? r.first_name}</td>
+                  <td>{r.lastName ?? r.last_name}</td>
+                  <td>{r.email ?? r.emailId}</td>
+                  <td>{r.departmentName ?? r.department?.name ?? r.companyName ?? '-'}</td>
                   <td>
                     <Link to={`/employees/${r.id}`} className="btn btn-sm btn-outline-secondary me-2">View</Link>
                     <Link to={`/employees/${r.id}/edit`} className="btn btn-sm btn-outline-primary me-2">Edit</Link>
@@ -68,7 +70,7 @@ export default function EmployeesList() {
                   </td>
                 </tr>
               ))}
-              {!rows.length && (
+              {!rows?.length && (
                 <tr><td colSpan="5" className="text-center text-muted">No employees yet</td></tr>
               )}
             </tbody>

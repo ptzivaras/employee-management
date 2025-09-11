@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { getEmployeeById } from '../services/employees.js'
-import { listTasksByEmployeeId } from '../services/tasks.js'
+import { getEmployeeById } from '../api/employees.js'
+import { listTasksByEmployeeId } from '../api/tasks.js'
 
 export default function EmployeeDetailsPage() {
   const { id } = useParams()

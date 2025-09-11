@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { listEmployees, deleteEmployee } from '../services/employees.js'
+import { listEmployees, deleteEmployee } from '../api/employees.js'
 
 export default function EmployeesPage() {
   const navigate = useNavigate()
