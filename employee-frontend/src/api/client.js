@@ -1,23 +1,21 @@
 import axios from "axios";
 import { pushToast } from "../components/ToastHost";
 
+// Normalize base URL and strip trailing slashes
+const baseURL =
+  (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1")
+    .replace(/\/+$/, "");
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1",
+  baseURL,
   timeout: 15000,
-  withCredentials: false,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Request interceptor (π.χ. place for auth header later)
-client.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor: ομοιόμορφα errors
+// Optional interceptors (helpful to surface backend errors)
 client.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -25,16 +23,14 @@ client.interceptors.response.use(
     const detail =
       error?.response?.data?.detail ||
       error?.response?.data?.message ||
+      (error?.response?.data?.fieldErrors &&
+        Object.values(error.response.data.fieldErrors).join(", ")) ||
       error?.message ||
       "Network error";
 
-    if (status >= 500) {
-      pushToast({ type: "danger", text: `Server error: ${detail}` });
-    } else if (status >= 400) {
-      pushToast({ type: "warning", text: detail });
-    } else {
-      pushToast({ type: "danger", text: detail });
-    }
+    if (status >= 500) pushToast({ type: "danger", text: `Server error: ${detail}` });
+    else if (status >= 400) pushToast({ type: "warning", text: detail });
+    else pushToast({ type: "danger", text: detail });
 
     return Promise.reject(error);
   }
